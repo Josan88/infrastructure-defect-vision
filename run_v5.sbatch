@@ -4,16 +4,22 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
-#SBATCH --time=08:00:00
+#SBATCH --time=02:30:00
+# HPC enforces a 2.5h wall-clock cap per submission. Each submission
+# completes ~2-3 iters of the 6-iter run; re-submit to resume (the iter
+# loop inside the notebook is fully resumable - completed iters are
+# skipped, in-progress iters retrain from prev last.pt).
 #SBATCH --chdir=/home/achin/COS40007-Group
 #SBATCH --output=logs/slurm-%j.out
 #SBATCH --error=logs/slurm-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=102775928@students.swinburne.edu.my
-#SBATCH --signal=B:USR1@120
-# SIGUSR1 120s before wall-time kill - gives Ultralytics a chance to flush
-# last.pt cleanly. (Ultralytics itself listens for SIGTERM, not SIGUSR1, but
-# the 120s buffer is enough for normal periodic checkpointing to run.)
+#SBATCH --signal=B:TERM@120
+# SIGTERM is sent 120s before the time-limit hard kill. Bash's default handler
+# propagates TERM to children in the same process group, so the python child
+# running jupyter nbconvert also gets TERM. Ultralytics 8.4.x installs a SIGTERM
+# handler that saves last.pt and exits cleanly, giving the 120s buffer to flush
+# the checkpoint to disk.
 
 set -euo pipefail
 
@@ -21,7 +27,9 @@ set -euo pipefail
 # Load python module so the venv's python can resolve shared libs.
 # The venv itself is activated AFTER module load so its bin/ is on PATH first.
 module load python/3.10.8
-module load gcc/12.2.0
+# gcc is only needed for pip install of C extensions; harmless at training time
+# but if the module is missing we still want the job to proceed.
+module load gcc/12.2.0 2>/dev/null || true
 
 # cd to repo (also done via --chdir, but explicit for clarity)
 cd /home/achin/COS40007-Group
@@ -49,12 +57,29 @@ mkdir -p logs
 jupyter nbconvert --to notebook --execute Train2-jason.ipynb \
   --output /tmp/Train2-jason.executed.ipynb \
   2>&1 | tee -a logs/nbconvert-$SLURM_JOB_ID.log
+NB_EXIT=${PIPESTATUS[0]}
 
 # --- 4. Move executed notebook back to repo ---
-if [ -f /tmp/Train2-jason.executed.ipynb ]; then
-  mv /tmp/Train2-jason.executed.ipynb Train2-jason.ipynb
+# If a partial .ipynb was produced (e.g., a downstream cell failed after the
+# iter loop succeeded), still move it - cells 1-12 outputs are still useful.
+NB_OUT=/tmp/Train2-jason.executed.ipynb
+if [ -f "$NB_OUT" ]; then
+  mv "$NB_OUT" Train2-jason.ipynb
   echo ""
   echo "Notebook updated: $(stat -c %s Train2-jason.ipynb 2>/dev/null) B"
+else
+  echo "WARNING: no executed notebook produced at $NB_OUT"
+  echo "Check logs/nbconvert-$SLURM_JOB_ID.log for errors"
+fi
+
+if [ "$NB_EXIT" -ne 0 ]; then
+  echo ""
+  echo "ERROR: nbconvert exited with code $NB_EXIT"
+  echo "The .ipynb above may be partial. The iter log + runs/ on disk are the source of truth."
+  echo "Re-submit to resume (completed iters will be skipped):"
+  echo "  sbatch run_v5.sbatch"
+  # Don't 'exit $NB_EXIT' here - let the final summary run so the user can
+  # see how many iters completed in the morning.
 fi
 
 # --- 5. Final summary ---
