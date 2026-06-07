@@ -1,0 +1,5 @@
+train: /home/achin/COS40007-Group/dataset/splits/iter2_train.txt
+val:   /home/achin/COS40007-Group/dataset/splits/val.txt
+test:  /home/achin/COS40007-Group/dataset/splits/test.txt
+nc: 3
+names: ['crack', 'pothole', 'wall_peeling']
