@@ -1,0 +1,10 @@
+train: /home/achin/COS40007-Group/dataset/train/images
+val: /home/achin/COS40007-Group/dataset/val/images
+test: /home/achin/COS40007-Group/dataset/test/images
+
+nc: 3
+
+names:
+  0: crack
+  1: potholes
+  2: wall_peeling
