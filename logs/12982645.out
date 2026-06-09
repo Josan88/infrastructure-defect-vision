@@ -30,3 +30,23 @@
 [I 2026-06-09 16:25:50.896 ServerApp]     http://127.0.0.1:38691/tree
 [I 2026-06-09 16:25:50.896 ServerApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 [I 2026-06-09 16:25:51.003 ServerApp] Skipped non-installed server(s): basedpyright, bash-language-server, dockerfile-language-server-nodejs, javascript-typescript-langserver, jedi-language-server, julia-language-server, pyrefly, pyright, python-language-server, python-lsp-server, r-languageserver, sql-language-server, texlab, typescript-language-server, unified-language-server, vscode-css-languageserver-bin, vscode-html-languageserver-bin, vscode-json-languageserver-bin, yaml-language-server
+
++------------------ Job Report: 12982645 (CANCELLED) ------------------+
+| Memory (RAM)  [###                 ] 18.1% (8.7 GB peak / 48 GB)     |
+| CPU           [##                  ] 12.7% average                   |
+| GPU           [####                ] 22.5% average                   |
+| Time          [----->              ] 25.5% (0-01:01:15 / 0-04:00:00) |
+|                                                                      |
+| Lustre Filesystem:                                                   |
+|   Path    Total Read    Total Write    Total IOPS                    |
+|   ------  ------------  -------------  ------------                  |
+|   /apps   18.9 MB       0 B            200                           |
+|   /home   1.3 GB        27.3 GB        54.6 K                        |
+|   OS      39.4 MB       0 B            4 K                           |
+|                                                                      |
+| Warnings:                                                            |
+|   - Too much memory requested                                        |
+|   - CPU usage is low                                                 |
+|   - GPU usage is low                                                 |
+|   - Too much time requested                                          |
++----------------------------------------------------------------------+
