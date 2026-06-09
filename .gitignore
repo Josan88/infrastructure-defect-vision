@@ -4,3 +4,4 @@ scripts
 docs
 jenny/aipro.ipynb
 logs
+__pycache__
