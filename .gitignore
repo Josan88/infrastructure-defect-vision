@@ -5,8 +5,4 @@ docs
 jenny/aipro.ipynb
 logs
 __pycache__
-<<<<<<< HEAD
 runs/defect_detection/rtdetr_l_v4/weights/best.pt
-=======
-runs/defect_detection/rtdetr_l_v4/weights/best.pt
->>>>>>> 4899706 (run train copy.ipynb on new dataset)

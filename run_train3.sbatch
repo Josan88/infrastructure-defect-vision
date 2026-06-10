@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=rtdetr_v6_train3
+#SBATCH --job-name=rtdetr_v7_train3
 #SBATCH --partition=milan-gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
@@ -16,7 +16,7 @@ set -euo pipefail
 
 REPO_DIR="/home/achin/COS40007-Group"
 NOTEBOOK="Train3.ipynb"
-RUN="rtdetr_l_v6"
+RUN="rtdetr_l_v7"
 PROJECT_DIR="runs/defect_detection"
 JOB_ID="${SLURM_JOB_ID:-manual}"
 TMP_NOTEBOOK="/tmp/${NOTEBOOK%.ipynb}.${JOB_ID}.executed.ipynb"
