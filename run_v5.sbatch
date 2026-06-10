@@ -82,23 +82,25 @@ fi
 # --- 5. Final summary ---
 echo ""
 echo "============================================================"
-echo "Final iterlog: runs/defect_detection/rtdetr_l_v5_iterlog.csv"
+echo "Training results: runs/defect_detection/rtdetr_l_v4/results.csv"
 echo "============================================================"
-cat runs/defect_detection/rtdetr_l_v5_iterlog.csv 2>/dev/null || echo "(no iterlog found)"
+head -5 runs/defect_detection/rtdetr_l_v4/results.csv 2>/dev/null || echo "(no results.csv found)"
 
 echo ""
 echo "============================================================"
-echo "Per-iter best weights:"
+echo "Weights:"
 echo "============================================================"
-for n in 0 1 2 3 4 5; do
-  d="runs/defect_detection/rtdetr_l_v5_iter${n}"
-  if [ -f "$d/weights/best.pt" ]; then
-    sz=$(stat -c %s "$d/weights/best.pt")
-    echo "  iter $n: $d/weights/best.pt ($sz B)"
-  else
-    echo "  iter $n: (not completed)"
-  fi
-done
+d="runs/defect_detection/rtdetr_l_v4"
+if [ -f "$d/weights/best.pt" ]; then
+  sz=$(stat -c %s "$d/weights/best.pt")
+  echo "  best: $d/weights/best.pt ($sz B)"
+else
+  echo "  best: (not completed)"
+fi
+if [ -f "$d/weights/last.pt" ]; then
+  sz=$(stat -c %s "$d/weights/last.pt")
+  echo "  last: $d/weights/last.pt ($sz B)"
+fi
 
 echo ""
 echo "============================================================"

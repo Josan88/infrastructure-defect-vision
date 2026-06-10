@@ -4,4 +4,5 @@ scripts
 docs
 jenny/aipro.ipynb
 logs
-__pycache__runs/defect_detection/rtdetr_l_v4/weights/best.pt
+__pycache__
+runs/defect_detection/rtdetr_l_v4/weights/best.pt
