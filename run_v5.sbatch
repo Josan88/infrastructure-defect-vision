@@ -23,10 +23,10 @@ set -euo pipefail
 # --- 1. Environment ---
 # Load python module so the venv's python can resolve shared libs.
 # The venv itself is activated AFTER module load so its bin/ is on PATH first.
-module load python/3.10.8
 # gcc is only needed for pip install of C extensions; harmless at training time
 # but if the module is missing we still want the job to proceed.
 module load gcc/12.2.0 2>/dev/null || true
+module load python/3.10.8
 
 # cd to repo (also done via --chdir, but explicit for clarity)
 cd /home/achin/COS40007-Group
