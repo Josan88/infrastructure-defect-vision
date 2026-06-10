@@ -1,6 +1,6 @@
 """
 COS40007 Design Project — AI Structural Defect Detection Demo
-RT-DETR-L vs YOLOv8s: Side-by-Side Comparison
+RT-DETR-L vs YOLOv26s: Side-by-Side Comparison
 
 Run: streamlit run app.py
 """
@@ -23,9 +23,9 @@ RTDETR_CANDIDATES = [
     os.path.join("runs", "defect_detection", "rtdetr_l_v4", "weights", "best.pt"),
 ]
 YOLO_CANDIDATES = [
-    os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
     os.path.join("jenny", "runs", "detect", "road_damage", "partial_freeze_neck", "weights", "best.pt"),
     os.path.join("jenny", "runs", "detect", "road_damage", "frozen_backbone", "weights", "best.pt"),
+    os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
 ]
 
 DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "dataset", "test", "images")
@@ -78,7 +78,7 @@ def load_models():
     yolo_path = _resolve_path(YOLO_CANDIDATES)
     try:
         models["yolo"] = YOLO(yolo_path)
-        models["yolo_name"] = "YOLOv8s"
+        models["yolo_name"] = "YOLOv26s"
         models["yolo_path"] = yolo_path
     except Exception as e:
         models["yolo"] = None
@@ -157,7 +157,7 @@ with st.sidebar:
         max_value=0.9,
         value=0.5,
         step=0.05,
-        help="RT-DETR-L is NMS-free and ignores this. For YOLOv8s, only filters duplicate overlapping boxes of the same class — detection count won't change if boxes don't overlap.",
+        help="RT-DETR-L is NMS-free and ignores this. For YOLOv26s, only filters duplicate overlapping boxes of the same class — detection count won't change if boxes don't overlap.",
     )
 
     st.divider()
@@ -171,9 +171,9 @@ with st.sidebar:
         st.caption(models.get("rtdetr_error", ""))
 
     if models.get("yolo"):
-        st.success(f"YOLOv8s loaded")
+        st.success(f"YOLOv26s loaded")
     else:
-        st.error("YOLOv8s not found")
+        st.error("YOLOv26s not found")
         st.caption(models.get("yolo_error", ""))
 
     st.divider()
@@ -243,7 +243,7 @@ if uploaded_file is not None:
 
     for col, model_key, label in [
         (col1, "rtdetr", "RT-DETR-L"),
-        (col2, "yolo", "YOLOv8s"),
+        (col2, "yolo", "YOLOv26s"),
     ]:
         model = models.get(model_key)
         if model is None:
@@ -265,7 +265,7 @@ if uploaded_file is not None:
 
         for col, model_key, label in [
             (col_r, "rtdetr", "RT-DETR-L"),
-            (col_y, "yolo", "YOLOv8s"),
+            (col_y, "yolo", "YOLOv26s"),
         ]:
             if model_key not in results:
                 continue
@@ -293,7 +293,7 @@ if uploaded_file is not None:
         cols = st.columns(2)
         for col, model_key, label in [
             (cols[0], "rtdetr", "RT-DETR-L"),
-            (cols[1], "yolo", "YOLOv8s"),
+            (cols[1], "yolo", "YOLOv26s"),
         ]:
             if model_key not in results:
                 continue
@@ -333,7 +333,7 @@ if uploaded_file is not None:
         st.markdown("---")
         st.subheader("Detailed Detections")
 
-        for model_key, label in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLOv8s")]:
+        for model_key, label in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLOv26s")]:
             if model_key not in results:
                 continue
             dets = results[model_key]["detections"]
