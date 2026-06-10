@@ -1,0 +1,12 @@
+
+path: dataset_incremental/iter_546
+
+train: images
+val: ../../dataset/val/images
+test: ../../dataset/test/images
+
+nc: 3
+names:
+  0: crack
+  1: potholes
+  2: wall_peeling
