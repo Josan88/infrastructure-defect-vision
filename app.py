@@ -340,26 +340,29 @@ with tab_detect:
         st.stop()
 
     st.subheader("Source Image")
-    col_upload, col_demo = st.columns(2)
 
     uploaded_file = None
 
-    with col_upload:
-        if source_choice == "Upload":
-            uploaded_file = st.file_uploader(
-                "Upload an image",
-                type=["jpg", "jpeg", "png", "bmp", "webp"],
-                key=f"uploader_{st.session_state['uploader_key']}",
-                on_change=_on_upload,
-                accept_multiple_files=False,
-            )
-        elif source_choice == "Curated Gallery" and ai_demo_files:
+    if source_choice == "Upload":
+        uploaded_file = st.file_uploader(
+            "Upload an image",
+            type=["jpg", "jpeg", "png", "bmp", "webp"],
+            key=f"uploader_{st.session_state['uploader_key']}",
+            on_change=_on_upload,
+            accept_multiple_files=False,
+        )
+
+    elif source_choice == "Curated Gallery":
+        if not ai_demo_files:
+            st.info("No curated demo images found in `demo_images/`.")
+        else:
             thumbs = [
                 (f, os.path.join(AI_DEMO_IMAGES_DIR, f)) for f in ai_demo_files
             ]
-            thumb_cols = st.columns(2)
+            N_COLS = 4
+            thumb_cols = st.columns(N_COLS)
             for idx, (fname, img_path) in enumerate(thumbs):
-                with thumb_cols[idx % 2]:
+                with thumb_cols[idx % N_COLS]:
                     st.image(img_path, width="stretch")
                     if st.button(
                         "Use this image",
@@ -370,11 +373,11 @@ with tab_detect:
                         st.session_state["uploader_key"] += 1
                         _on_ai_demo_change()
             st.caption("Click any image to load it into the detector.")
-        elif source_choice == "Curated Gallery":
-            st.info("No curated demo images found.")
 
-    with col_demo:
-        if source_choice == "Test Set" and demo_files:
+    elif source_choice == "Test Set":
+        if not demo_files:
+            st.info("Demo images not available in `dataset/test/images/`.")
+        else:
             selected_demo = st.selectbox(
                 "Pick a test image:",
                 ["(none)"] + demo_files,
@@ -385,8 +388,6 @@ with tab_detect:
                 demo_path = os.path.join(DEMO_IMAGES_DIR, selected_demo)
                 with open(demo_path, "rb") as f:
                     uploaded_file = io.BytesIO(f.read())
-        elif source_choice == "Test Set":
-            st.info("Demo images not available.")
 
     if (source_choice == "Curated Gallery"
             and st.session_state.get("ai_demo_sel")):
