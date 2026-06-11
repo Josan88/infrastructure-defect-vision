@@ -71,7 +71,7 @@ simplify: true
 opset: null
 workspace: null
 nms: false
-lr0: 0.002
+lr0: 0.0015
 lrf: 0.01
 momentum: 0.937
 weight_decay: 0.0001
