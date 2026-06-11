@@ -19,13 +19,12 @@ CLASS_NAMES = {0: "crack", 1: "pothole", 2: "wall_peeling"}
 CLASS_COLORS = {0: (255, 50, 50), 1: (50, 200, 50), 2: (50, 100, 255)}
 
 RTDETR_CANDIDATES = [
+    os.path.join("runs", "defect_detection", "rtdetr_l_v7_iter3", "weights", "best.pt"),
     os.path.join("runs", "defect_detection", "rtdetr_l_v5_iter4", "weights", "best.pt"),
-    os.path.join("runs", "defect_detection", "rtdetr_l_v4", "weights", "best.pt"),
 ]
 YOLO_CANDIDATES = [
-    os.path.join("jenny", "runs", "detect", "road_damage", "partial_freeze_neck", "weights", "best.pt"),
-    os.path.join("jenny", "runs", "detect", "road_damage", "frozen_backbone", "weights", "best.pt"),
     os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
+    os.path.join("jenny", "runs", "detect", "road_damage", "frozen_backbone", "weights", "best.pt"),
 ]
 
 DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "dataset", "test", "images")
