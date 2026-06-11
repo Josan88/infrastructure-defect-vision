@@ -1,6 +1,6 @@
 """
 COS40007 Design Project — AI Structural Defect Detection Demo
-RT-DETR-L vs YOLO26s: Side-by-Side Comparison
+RT-DETR-L vs YOLO26m: Side-by-Side Comparison
 
 Run: streamlit run app.py
 """
@@ -25,15 +25,16 @@ CLASS_LEGEND = [
 
 RTDETR_CANDIDATES = [
     os.path.join("runs", "defect_detection", "rtdetr_l_v7_iter3", "weights", "best.pt"),
-    os.path.join("runs", "defect_detection", "rtdetr_l_v5_iter4", "weights", "best.pt"),
+    # os.path.join("runs", "defect_detection", "rtdetr_l_v5_iter4", "weights", "best.pt"),
 ]
 YOLO_CANDIDATES = [
-    os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
+    os.path.join("jenny", "runs", "detect", "road_damage", "frozen_backbone", "weights", "best.pt"),
+    # os.path.join("jenny", "runs", "detect", "road_damage", "partial_freeze_neck", "weights", "best.pt"),
+    # os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
 ]
 
 DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "dataset", "test", "images")
 AI_DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "demo_images")
-DEFAULT_IMAGE_PATH = os.path.join(BASE_DIR, "default.png")
 
 ARTIFACT_BASE = os.path.join("runs", "defect_detection")
 EVIDENCE_IMAGES = [
@@ -207,7 +208,7 @@ def load_models():
     yolo_path = _resolve_path(YOLO_CANDIDATES)
     try:
         models["yolo"] = YOLO(yolo_path)
-        models["yolo_name"] = "YOLO26s"
+        models["yolo_name"] = "YOLO26m"
         models["yolo_path"] = yolo_path
     except Exception as e:
         models["yolo"] = None
@@ -296,9 +297,9 @@ with st.sidebar:
         st.caption(models.get("rtdetr_error", ""))
 
     if models.get("yolo"):
-        st.success("YOLO26s loaded")
+        st.success("YOLO26m loaded")
     else:
-        st.error("YOLO26s not loaded")
+        st.error("YOLO26m not loaded")
         st.caption(models.get("yolo_error", ""))
 
     st.divider()
@@ -308,7 +309,7 @@ with st.sidebar:
         st.caption(f"RT-DETR-L: {rtdetr_size:.1f} MB — v7 iter3 (mAP50 0.613)")
     if models.get("yolo_path"):
         yolo_size = os.path.getsize(models["yolo_path"]) / (1024 * 1024)
-        st.caption(f"YOLO26s: {yolo_size:.1f} MB — unfrozen (mAP50 0.816)")
+        st.caption(f"YOLO26m: {yolo_size:.1f} MB — frozen_backbone (mAP50 0.763)")
 
     st.divider()
     st.caption("COS40007 Design Project — Theme 2")
@@ -317,7 +318,7 @@ with st.sidebar:
 st.title("Structural Defect Detection")
 st.markdown(
     "Real-time side-by-side comparison of **RT-DETR-L** (transformer) and "
-    "**YOLO26s** (CNN) on infrastructure defect images."
+    "**YOLO26m** (CNN) on infrastructure defect images."
 )
 
 
@@ -397,9 +398,7 @@ with tab_detect:
                 uploaded_file = io.BytesIO(f.read())
             st.info(f"Loaded curated image: **{st.session_state['ai_demo_sel']}**")
 
-    if uploaded_file is None and os.path.isfile(DEFAULT_IMAGE_PATH):
-        with open(DEFAULT_IMAGE_PATH, "rb") as f:
-            uploaded_file = io.BytesIO(f.read())
+
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file).convert("RGB")
@@ -414,7 +413,7 @@ with tab_detect:
 
         for col, model_key, label in [
             (col1, "rtdetr", "RT-DETR-L"),
-            (col2, "yolo", "YOLO26s"),
+            (col2, "yolo", "YOLO26m"),
         ]:
             model = models.get(model_key)
             if model is None:
@@ -460,11 +459,11 @@ with tab_detect:
 
             yolo_df = _read_yolo_summary()
             if yolo_df is not None and len(yolo_df) > 0:
-                unfrozen = yolo_df[yolo_df["Variant"] == "Unfrozen"]
-                if len(unfrozen) > 0:
-                    u = unfrozen.iloc[0]
+                frozen = yolo_df[yolo_df["Variant"] == "Frozen Backbone"]
+                if len(frozen) > 0:
+                    u = frozen.iloc[0]
                     yolo_row = {
-                        "Model": "YOLO26s",
+                        "Model": "YOLO26m",
                         "Architecture": "CNN (single-stage)",
                         "mAP50": f"{u.get('metrics/mAP50(B)', 0):.3f}",
                         "mAP50-95": f"{u.get('metrics/mAP50-95(B)', 0):.3f}",
@@ -475,16 +474,16 @@ with tab_detect:
                         "Peak Iter": "-",
                     }
                 else:
-                    yolo_row = {"Model": "YOLO26s", "Architecture": "CNN", "Parameters": "11M"}
+                    yolo_row = {"Model": "YOLO26m", "Architecture": "CNN", "Parameters": "11M"}
             else:
-                yolo_row = {"Model": "YOLO26s", "Architecture": "CNN", "Parameters": "11M"}
+                yolo_row = {"Model": "YOLO26m", "Architecture": "CNN", "Parameters": "11M"}
 
             comp_df = pd.DataFrame([rtdetr_row, yolo_row])
             st.dataframe(comp_df, width="stretch", hide_index=True)
 
             if "time_ms" in results.get("rtdetr", {}) or "time_ms" in results.get("yolo", {}):
                 ms_data = []
-                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26s")]:
+                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26m")]:
                     if mk in results:
                         ms_data.append({"Model": lbl, "Inference (ms)": f"{results[mk]['time_ms']:.0f}"})
                 if ms_data:
@@ -506,7 +505,7 @@ with tab_detect:
             col_r, col_y = st.columns(2)
             for col, model_key, label in [
                 (col_r, "rtdetr", "RT-DETR-L"),
-                (col_y, "yolo", "YOLO26s"),
+                (col_y, "yolo", "YOLO26m"),
             ]:
                 if model_key not in results:
                     continue
@@ -540,7 +539,7 @@ with tab_detect:
             analytics_cols = st.columns(2)
             for col, model_key, label in [
                 (analytics_cols[0], "rtdetr", "RT-DETR-L"),
-                (analytics_cols[1], "yolo", "YOLO26s"),
+                (analytics_cols[1], "yolo", "YOLO26m"),
             ]:
                 if model_key not in results:
                     continue
@@ -590,7 +589,7 @@ with tab_detect:
             st.markdown("---")
             st.subheader("Detailed Detections")
 
-            for model_key, label in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26s")]:
+            for model_key, label in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26m")]:
                 if model_key not in results:
                     continue
                 dets = results[model_key]["detections"]
@@ -616,7 +615,7 @@ with tab_detect:
                 "Export format:",
                 [
                     "Annotated PNG (RT-DETR-L)",
-                    "Annotated PNG (YOLO26s)",
+                    "Annotated PNG (YOLO26m)",
                     "Side-by-side composite PNG",
                     "Detections CSV",
                     "Detections JSON",
@@ -626,7 +625,7 @@ with tab_detect:
 
             if export_format.startswith("Annotated PNG"):
                 model_key = "rtdetr" if "RT-DETR" in export_format else "yolo"
-                label = "RT-DETR-L" if model_key == "rtdetr" else "YOLO26s"
+                label = "RT-DETR-L" if model_key == "rtdetr" else "YOLO26m"
                 if model_key in results:
                     det_img = _draw_boxes_on_pil(image, results[model_key]["detections"])
                     buf = io.BytesIO()
@@ -642,14 +641,14 @@ with tab_detect:
 
             elif export_format == "Side-by-side composite PNG":
                 imgs = {}
-                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26s")]:
+                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26m")]:
                     if mk in results:
                         imgs[mk] = (_draw_boxes_on_pil(image, results[mk]["detections"]), lbl)
                 if len(imgs) == 2:
                     composite = _make_composite(
                         imgs["rtdetr"][0], imgs["yolo"][0],
                         f"RT-DETR-L ({results['rtdetr']['time_ms']:.0f} ms)",
-                        f"YOLO26s ({results['yolo']['time_ms']:.0f} ms)",
+                        f"YOLO26m ({results['yolo']['time_ms']:.0f} ms)",
                     )
                     buf = io.BytesIO()
                     composite.save(buf, format="PNG")
@@ -666,7 +665,7 @@ with tab_detect:
 
             elif export_format == "Detections CSV":
                 all_rows = []
-                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26s")]:
+                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26m")]:
                     if mk in results:
                         for d in results[mk]["detections"]:
                             all_rows.append({
@@ -694,7 +693,7 @@ with tab_detect:
 
             elif export_format == "Detections JSON":
                 all_data = {}
-                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26s")]:
+                for mk, lbl in [("rtdetr", "RT-DETR-L"), ("yolo", "YOLO26m")]:
                     if mk in results:
                         all_data[mk] = {
                             "model": lbl,
@@ -747,7 +746,7 @@ with tab_detect:
                     composite = _make_composite(
                         _draw_boxes_on_pil(image, results["rtdetr"]["detections"]),
                         _draw_boxes_on_pil(image, results["yolo"]["detections"]),
-                        "RT-DETR-L", "YOLO26s",
+                        "RT-DETR-L", "YOLO26m",
                     )
                     comp_buf = io.BytesIO()
                     composite.save(comp_buf, format="PNG")
@@ -776,7 +775,7 @@ with tab_method:
         "This system detects structural defects in civil infrastructure using "
         "deep learning object detection. The demo compares two fundamentally "
         "different architectures — a transformer-based encoder-decoder (RT-DETR-L) "
-        "and a single-stage CNN (YOLO26s) — to evaluate the trade-off between "
+        "and a single-stage CNN (YOLO26m) — to evaluate the trade-off between "
         "detection accuracy and inference speed."
     )
 
@@ -793,7 +792,7 @@ with tab_method:
         "| Model | Architecture | Params | Training | Peak mAP50 |\n"
         "|-------|-------------|--------|----------|------------|\n"
         "| **RT-DETR-L** | Transformer encoder-decoder | 32M | 6-iter active learning, 50 epochs/iter | 0.613 (iter 3) |\n"
-        "| **YOLO26s** | CNN single-stage | 11M | 300 epochs, unfrozen backbone | 0.816 |"
+        "| **YOLO26m** | CNN single-stage | 11M | 277 epochs, frozen backbone | 0.763 |"
     )
 
     st.subheader("RT-DETR-L Active-Learning Loop")
@@ -806,18 +805,18 @@ with tab_method:
         "useful signal."
     )
 
-    st.subheader("YOLO26s Ablation Study")
+    st.subheader("YOLO26m Ablation Study")
     st.markdown(
         "Three freeze-strategy variants were trained to evaluate transfer learning:"
     )
     st.markdown(
         "- **Frozen Backbone**: Pre-trained backbone weights locked; only the detection head is trained.\n"
         "- **Partial Freeze Neck**: Neck (feature pyramid) layers partially frozen.\n"
-        "- **Unfrozen**: All layers trainable; best overall mAP50 (0.816) but lower recall."
+        "- **Unfrozen**: All layers trainable; highest recall but lower mAP50."
     )
     st.markdown(
-        "The unfrozen variant was selected for the demo as it achieves the highest "
-        "mAP50 among the three."
+        "The **frozen backbone** variant was selected for the demo as it achieves the best "
+        "mAP50 (0.763) among the three."
     )
 
     st.subheader("Confidence Threshold")
@@ -862,7 +861,7 @@ with tab_method:
           <text x="390" y="102" text-anchor="middle" font-size="10" fill="#666">Transformer | 32M</text>
 
           <rect x="325" y="235" width="130" height="55" rx="8" fill="#e3f2fd" stroke="#1e88e5" stroke-width="1.5"/>
-          <text x="390" y="257" text-anchor="middle" font-size="11" fill="#333">YOLO26s</text>
+          <text x="390" y="257" text-anchor="middle" font-size="11" fill="#333">YOLO26m</text>
           <text x="390" y="272" text-anchor="middle" font-size="10" fill="#666">CNN | 11M</text>
 
           <line x1="455" y1="93" x2="510" y2="140" stroke="#666" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -912,7 +911,7 @@ with tab_evidence:
     else:
         st.warning("Iterlog not found at `runs/defect_detection/rtdetr_l_v7_iterlog.csv`.")
 
-    st.subheader("YOLO26s Ablation Comparison")
+    st.subheader("YOLO26m Ablation Comparison")
     yolo_df = _read_yolo_summary()
     if yolo_df is not None and len(yolo_df) > 0:
         st.dataframe(
@@ -935,7 +934,7 @@ with tab_evidence:
         else:
             st.caption(f"Artefact not found: {fname}")
 
-    st.subheader("YOLO26s Ablation Artefacts")
+    st.subheader("YOLO26m Ablation Artefacts")
     for variant, label in YOLO_EVIDENCE:
         with st.expander(label, expanded=False):
             for artefact in ("results.png", "confusion_matrix_normalized.png", "BoxPR_curve.png"):
