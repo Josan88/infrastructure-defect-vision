@@ -10,7 +10,6 @@
 #SBATCH --output=logs/slurm-%j.out
 #SBATCH --error=logs/slurm-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
-#SBATCH --mail-user=102775928@students.swinburne.edu.my
 #SBATCH --signal=B:TERM@120
 # SIGTERM is sent 120s before the time-limit hard kill. Bash's default handler
 # propagates TERM to children in the same process group, so the python child

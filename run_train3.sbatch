@@ -9,7 +9,6 @@
 #SBATCH --output=logs/slurm-%j.out
 #SBATCH --error=logs/slurm-%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
-#SBATCH --mail-user=102775928@students.swinburne.edu.my
 #SBATCH --signal=B:TERM@120
 
 set -euo pipefail
