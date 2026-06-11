@@ -12,7 +12,7 @@ Detection). Two-model pipeline trained on a YOLO-format dataset of 3 classes —
    comparison.
 
 The Streamlit demo `app.py` loads both and lets users pick / upload images. Framework:
-Ultralytics 8.4.x. Deployed to HF Space `josan88/structural-defect-detection`.
+Ultralytics 8.4.x. Deployed to Streamlit Cloud as `infrastructure-defect-vision`.
 
 ## Gotchas that bite every new session
 
@@ -163,19 +163,26 @@ root). **v7 never hit the threshold** — iter 3 was the peak at 0.6133.
 leaves a partial `last.pt` with no iterlog row → next run retrains that iter. Initial
 weights for `n>0` are loaded from the previous iter's `last.pt` (NOT `resume=True`).
 
-### Deploy the Streamlit demo to HF Space
-The Space is `josan88/structural-defect-detection`. **Do not use `git push`** — the
-HPC checkout is huge and the push hangs from this Windows box. Use the `hf` CLI:
+### Deploy the Streamlit demo to Streamlit Cloud
+The demo is hosted on **Streamlit Cloud** as `infrastructure-defect-vision` (not Hugging
+Face). Streamlit Cloud auto-pulls from the configured GitHub branch on push and rebuilds
+the venv from `requirements.txt`.
 
 ```bash
-hf upload josan88/structural-defect-detection . --type space
+# from this Windows box, just commit & push; Streamlit Cloud does the rest
+git add requirements.txt
+git commit -m "fix: pin opencv-python-headless for Streamlit Cloud"
+git push origin main
 ```
 
-The repo root and `jenny/` are the deployable unit. **Critical:** the Space expects
-`runs/` and `jenny/runs/` paths exactly as they are in the repo (relative to repo
-root). Don't flatten to `models/`. If a deploy breaks, the most common cause is a
-missing or renamed weights file in `runs/defect_detection/rtdetr_l_v7_iter3/weights/`
-or `jenny/runs/detect/road_damage/unfrozen/weights/`.
+The repo root is the deployable unit. **Critical:** the app expects `runs/` and
+`jenny/runs/` paths exactly as they are in the repo (relative to repo root). Don't flatten
+to `models/`. If a deploy breaks, the most common causes are:
+1. A missing or renamed weights file in `runs/defect_detection/rtdetr_l_v7_iter3/weights/`
+   or `jenny/runs/detect/road_damage/unfrozen/weights/`.
+2. A new transitive dep (e.g. `opencv-python` full build) that needs a system library
+   not present in the Streamlit Cloud image — fix by pinning `opencv-python-headless`
+   in `requirements.txt`.
 
 ## Layout
 - `Train*.ipynb`             — RT-DETR training notebooks (use `Train3.ipynb`)
