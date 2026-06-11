@@ -28,6 +28,8 @@ YOLO_CANDIDATES = [
 ]
 
 DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "dataset", "test", "images")
+AI_DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "demo_images")
+HERO_IMAGE_PATH = os.path.join(AI_DEMO_IMAGES_DIR, "hero_crack_road.png")
 DEFAULT_IMAGE_PATH = os.path.join(BASE_DIR, "default.png")
 
 # ── Page Setup ──────────────────────────────────────────────────────────
@@ -46,8 +48,28 @@ st.markdown("""
         border-radius: 10px;
         padding: 10px;
     }
+    .hero-caption {
+        text-align: center;
+        color: var(--text-color);
+        opacity: 0.7;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ── Hero Banner ─────────────────────────────────────────────────────────
+if os.path.isfile(HERO_IMAGE_PATH):
+    st.image(
+        HERO_IMAGE_PATH,
+        use_container_width=True,
+    )
+    st.markdown(
+        "<p class='hero-caption'>AI-generated sample for demo · "
+        "Real-time RT-DETR-L vs YOLOv8s structural-defect detection</p>",
+        unsafe_allow_html=True,
+    )
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────
@@ -87,8 +109,8 @@ def load_models():
 
 
 # ── Inference ───────────────────────────────────────────────────────────
-def run_inference(model, image: Image.Image, conf: float, iou: float):
-    results = model.predict(source=image, conf=conf, iou=iou, verbose=False)
+def run_inference(model, image: Image.Image, conf: float):
+    results = model.predict(source=image, conf=conf, verbose=False)
     r = results[0]
     boxes = r.boxes
     detections = []
@@ -150,14 +172,36 @@ with st.sidebar:
         value=0.25,
         step=0.05,
     )
-    iou = st.slider(
-        "IoU Threshold (NMS)",
-        min_value=0.1,
-        max_value=0.9,
-        value=0.5,
-        step=0.05,
-        help="RT-DETR-L is NMS-free and ignores this. For YOLOv26s, only filters duplicate overlapping boxes of the same class — detection count won't change if boxes don't overlap.",
-    )
+
+    st.divider()
+    st.markdown("**🖼️ AI Demo Gallery**")
+    ai_demo_files = []
+    if os.path.isdir(AI_DEMO_IMAGES_DIR):
+        ai_demo_files = sorted(
+            f for f in os.listdir(AI_DEMO_IMAGES_DIR)
+            if f.lower().endswith((".jpg", ".jpeg", ".png"))
+        )
+    if ai_demo_files:
+        # Pre-load bytes so we can show tiny thumbnails
+        thumbs = []
+        for f in ai_demo_files:
+            p = os.path.join(AI_DEMO_IMAGES_DIR, f)
+            with open(p, "rb") as fh:
+                thumbs.append((f, fh.read()))
+        cols_thumb = st.columns(2)
+        for idx, (fname, data) in enumerate(thumbs):
+            with cols_thumb[idx % 2]:
+                st.image(data, use_container_width=True)
+                if st.button(
+                    "▶ Use this image",
+                    key=f"ai_demo_btn_{idx}",
+                    use_container_width=True,
+                ):
+                    st.session_state["ai_demo_sel"] = fname
+                    st.session_state["uploader_key"] += 1
+        st.caption("Click any image to load it into the detector.")
+    else:
+        st.caption("No AI demo images found in `demo_images/`.")
 
     st.divider()
     st.markdown("**Model Paths:**")
@@ -182,16 +226,25 @@ with st.sidebar:
 # ── Image Upload ────────────────────────────────────────────────────────
 if "demo_sel" not in st.session_state:
     st.session_state["demo_sel"] = "(none)"
+if "ai_demo_sel" not in st.session_state:
+    st.session_state["ai_demo_sel"] = None
 if "uploader_key" not in st.session_state:
     st.session_state["uploader_key"] = 0
 
 
 def _on_upload():
     st.session_state["demo_sel"] = "(none)"
+    st.session_state["ai_demo_sel"] = None
 
 
 def _on_demo_change():
+    st.session_state["ai_demo_sel"] = None
     st.session_state["uploader_key"] += 1
+
+
+def _on_ai_demo_change():
+    st.session_state["demo_sel"] = "(none)"
+    # uploader_key was already bumped in the button handler
 
 
 col_upload, col_demo = st.columns(2)
@@ -224,6 +277,16 @@ if demo_files:
 else:
     col_demo.info("Demo images not available — upload your own.")
 
+# AI demo gallery selection (sidebar) takes precedence
+if st.session_state.get("ai_demo_sel"):
+    ai_path = os.path.join(AI_DEMO_IMAGES_DIR, st.session_state["ai_demo_sel"])
+    if os.path.isfile(ai_path):
+        with open(ai_path, "rb") as f:
+            uploaded_file = io.BytesIO(f.read())
+        st.info(
+            f"📌 Loaded AI demo image: **{st.session_state['ai_demo_sel']}**"
+        )
+
 if uploaded_file is None and os.path.isfile(DEFAULT_IMAGE_PATH):
     with open(DEFAULT_IMAGE_PATH, "rb") as f:
         uploaded_file = io.BytesIO(f.read())
@@ -249,9 +312,9 @@ if uploaded_file is not None:
             col.error(f"{label} model not loaded")
             continue
 
-        with col.spinner(f"Running {label} inference..."):
+        with st.spinner(f"Running {label} inference..."):
             t0 = __import__("time").time()
-            result = run_inference(model, image, conf, iou)
+            result = run_inference(model, image, conf)
             elapsed = __import__("time").time() - t0
             result["time_ms"] = elapsed * 1000
             results[model_key] = result
