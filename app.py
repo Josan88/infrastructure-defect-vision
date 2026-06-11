@@ -59,17 +59,28 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Hero Banner ─────────────────────────────────────────────────────────
-if os.path.isfile(HERO_IMAGE_PATH):
-    st.image(
-        HERO_IMAGE_PATH,
-        use_container_width=True,
-    )
-    st.markdown(
-        "<p class='hero-caption'>AI-generated sample for demo · "
-        "Real-time RT-DETR-L vs YOLOv8s structural-defect detection</p>",
-        unsafe_allow_html=True,
-    )
+# ── Session State Init ──────────────────────────────────────────────────
+if "demo_sel" not in st.session_state:
+    st.session_state["demo_sel"] = "(none)"
+if "ai_demo_sel" not in st.session_state:
+    st.session_state["ai_demo_sel"] = None
+if "uploader_key" not in st.session_state:
+    st.session_state["uploader_key"] = 0
+
+
+# ── Callbacks ───────────────────────────────────────────────────────────
+def _on_upload():
+    st.session_state["demo_sel"] = "(none)"
+    st.session_state["ai_demo_sel"] = None
+
+
+def _on_demo_change():
+    st.session_state["ai_demo_sel"] = None
+    st.session_state["uploader_key"] += 1
+
+
+def _on_ai_demo_change():
+    st.session_state["demo_sel"] = "(none)"
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────
@@ -161,6 +172,19 @@ def draw_boxes_on_pil(image: Image.Image, detections: list) -> Image.Image:
     return draw_img
 
 
+# ── Hero Banner ─────────────────────────────────────────────────────────
+if os.path.isfile(HERO_IMAGE_PATH):
+    st.image(
+        HERO_IMAGE_PATH,
+        use_container_width=True,
+    )
+    st.markdown(
+        "<p class='hero-caption'>AI-generated sample for demo · "
+        "Real-time RT-DETR-L vs YOLOv8s structural-defect detection</p>",
+        unsafe_allow_html=True,
+    )
+
+
 # ── Sidebar ─────────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("Controls")
@@ -182,16 +206,14 @@ with st.sidebar:
             if f.lower().endswith((".jpg", ".jpeg", ".png"))
         )
     if ai_demo_files:
-        # Pre-load bytes so we can show tiny thumbnails
         thumbs = []
         for f in ai_demo_files:
             p = os.path.join(AI_DEMO_IMAGES_DIR, f)
-            with open(p, "rb") as fh:
-                thumbs.append((f, fh.read()))
+            thumbs.append((f, p))
         cols_thumb = st.columns(2)
-        for idx, (fname, data) in enumerate(thumbs):
+        for idx, (fname, img_path) in enumerate(thumbs):
             with cols_thumb[idx % 2]:
-                st.image(data, use_container_width=True)
+                st.image(img_path, use_container_width=True)
                 if st.button(
                     "▶ Use this image",
                     key=f"ai_demo_btn_{idx}",
@@ -199,6 +221,7 @@ with st.sidebar:
                 ):
                     st.session_state["ai_demo_sel"] = fname
                     st.session_state["uploader_key"] += 1
+                    _on_ai_demo_change()
         st.caption("Click any image to load it into the detector.")
     else:
         st.caption("No AI demo images found in `demo_images/`.")
@@ -224,29 +247,6 @@ with st.sidebar:
 
 
 # ── Image Upload ────────────────────────────────────────────────────────
-if "demo_sel" not in st.session_state:
-    st.session_state["demo_sel"] = "(none)"
-if "ai_demo_sel" not in st.session_state:
-    st.session_state["ai_demo_sel"] = None
-if "uploader_key" not in st.session_state:
-    st.session_state["uploader_key"] = 0
-
-
-def _on_upload():
-    st.session_state["demo_sel"] = "(none)"
-    st.session_state["ai_demo_sel"] = None
-
-
-def _on_demo_change():
-    st.session_state["ai_demo_sel"] = None
-    st.session_state["uploader_key"] += 1
-
-
-def _on_ai_demo_change():
-    st.session_state["demo_sel"] = "(none)"
-    # uploader_key was already bumped in the button handler
-
-
 col_upload, col_demo = st.columns(2)
 
 uploaded_file = col_upload.file_uploader(
