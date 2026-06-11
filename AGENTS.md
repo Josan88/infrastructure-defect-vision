@@ -61,20 +61,20 @@ Ultralytics 8.4.x. Deployed to Streamlit Cloud as `infrastructure-defect-vision`
 12. **`.gitignore` caveats.** `runs/` is committed (the project's 2nd commit is literally
     "runs"). Don't `git rm` it. `.gitignore` covers `.ipynb_checkpoints/`, `.venv/`,
     `__pycache__/`, `logs/`, `runs/defect_detection/rtdetr_l_v4/weights/best.pt`
-    (intentionally excluded to keep the repo small — see gotcha #15).
+    (intentionally excluded to keep the repo small — see gotcha #15). **Also gitignored
+    but committed:** `scripts/`, `docs/`, and `jenny/aipro.ipynb` — they were added to
+    the repo before the gitignore rules. Don't un-track them; just know they won't show
+    as "new" in `git status`.
 13. **App model path resolution.** `app.py` uses `_resolve_path([...])` to pick the
     first existing candidate from a list. The first candidate for RTDETR is
     `runs/defect_detection/rtdetr_l_v7_iter3/weights/best.pt` — keep it. The fallback
     `rtdetr_l_v5_iter4/weights/best.pt` is **dead code** (v5 dirs deleted) but harmless
     because the first candidate always exists. Don't add a new "first" candidate without
     updating the order so the best model wins.
-14. **Demo images are mid-rename.** `demo_images/` has 5 old files deleted and 6 new
-    ones staged but uncommitted. Don't `git restore demo_images/` without checking —
-    the new set is intentional.
-15. **`rtdetr_l_v4` weights are partial.** `runs/defect_detection/rtdetr_l_v4/weights/`
+14. **`rtdetr_l_v4` weights are partial.** `runs/defect_detection/rtdetr_l_v4/weights/`
     contains only `last.pt` (66 MB) — `best.pt` is gitignored. v4 is kept for plots
     and results.csv only; do not try to load it via `RTDETR(.../v4/weights/best.pt)`.
-16. **Current state: v7 STOP not reached.** v7's 6-iter loop completed (iters 0-5) but
+15. **Current state: v7 STOP not reached.** v7's 6-iter loop completed (iters 0-5) but
     the peak (iter 3, mAP50=0.6133) was below the 0.85 threshold, so no `STOP` sentinel
     was written. `rtdetr_l_v7_iterlog.csv` is the source of truth. To re-run, delete
     the iterlog + per-iter dirs.
@@ -103,7 +103,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 Opens at `http://localhost:8501`. Loads both models via the cached `_resolve_path`
-helper. See `DEMO_README.md` for screenshots, troubleshooting, and HF Space deploy
+helper. See `DEMO_README.md` for screenshots, troubleshooting, and deployment
 instructions.
 
 ### Retrain RT-DETR (from a notebook)
@@ -209,6 +209,7 @@ to `models/`. If a deploy breaks, the most common causes are:
 - `docs/RUN_ON_HPC.md`       — quick-reference card for both run workflows (still v5-flavoured; out of date)
 - `docs/PRE_RUN_AUDIT_REPORT.md` — pre-run audit findings
 - `.venv/`, `__pycache__/`, `logs/` — gitignored personal scratch
+- `scripts/`, `docs/`, `jenny/aipro.ipynb` — gitignored but committed (pre-date gitignore)
 
 ## Conventions
 - `class_id` in label `.txt` is YOLO 0-indexed: 0=crack, 1=pothole, 2=wall_peeling.
