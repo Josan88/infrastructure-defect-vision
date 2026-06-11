@@ -7,7 +7,7 @@ Detection). Two-model pipeline trained on a YOLO-format dataset of 3 classes —
 
 1. **RT-DETR-L** (`runs/defect_detection/rtdetr_l_v7_iter3/` — peak mAP50 ≈ 0.61) — driven
    by the 6-iteration active-learning loop in `Train3.ipynb`.
-2. **YOLO26s** ablation (`jenny/runs/detect/road_damage/unfrozen/`) — three runs
+2. **YOLO26m** ablation (`jenny/runs/detect/road_damage/frozen_backbone/`) — three runs
    (`frozen_backbone`, `partial_freeze_neck`, `unfrozen`) for side-by-side demo
    comparison.
 
@@ -33,7 +33,7 @@ Ultralytics 8.4.x. Deployed to Streamlit Cloud as `infrastructure-defect-vision`
 4. **YOLO notebooks live in `jenny/`.** `jenny/aipro.ipynb` is the training notebook;
    output weights land in `jenny/runs/detect/road_damage/{frozen_backbone,partial_freeze_neck,unfrozen}/`.
 5. **Pretrained weights** are committed: `rtdetr-l.pt` at repo root (66 MB) and
-   `jenny/yolo26s.pt` (20 MB). Passed as `model=...` when fine-tuning.
+   `jenny/yolo26m.pt` (20 MB). Passed as `model=...` when fine-tuning.
 6. **No `requirements.txt` for training.** The repo's `requirements.txt` is for the
    **demo only** (`streamlit`, `ultralytics`, `pandas`, `pillow`, `numpy`). Training
    notebooks just need `ultralytics` — it pulls torch automatically.
@@ -92,7 +92,7 @@ m.predict(source="dataset/test/images", conf=0.25, save=True,
 ### Smoke-test inference (YOLO)
 ```python
 from ultralytics import YOLO
-m = YOLO("jenny/runs/detect/road_damage/unfrozen/weights/best.pt")
+m = YOLO("jenny/runs/detect/road_damage/frozen_backbone/weights/best.pt")
 m.predict(source="dataset/test/images", conf=0.25, save=True,
           project="jenny/runs/detect", name="infer_smoke")
 ```
@@ -179,14 +179,14 @@ The repo root is the deployable unit. **Critical:** the app expects `runs/` and
 `jenny/runs/` paths exactly as they are in the repo (relative to repo root). Don't flatten
 to `models/`. If a deploy breaks, the most common causes are:
 1. A missing or renamed weights file in `runs/defect_detection/rtdetr_l_v7_iter3/weights/`
-   or `jenny/runs/detect/road_damage/unfrozen/weights/`.
+   or `jenny/runs/detect/road_damage/frozen_backbone/weights/`.
 2. A new transitive dep (e.g. `opencv-python` full build) that needs a system library
    not present in the Streamlit Cloud image — fix by pinning `opencv-python-headless`
    in `requirements.txt`.
 
 ## Layout
 - `Train*.ipynb`             — RT-DETR training notebooks (use `Train3.ipynb`)
-- `jenny/aipro.ipynb`        — YOLO26s training notebook
+- `jenny/aipro.ipynb`        — YOLO26m training notebook
 - `app.py`                   — Streamlit demo (RT-DETR vs YOLO side-by-side)
 - `requirements.txt`         — **demo only** deps (`streamlit`, `ultralytics`, `pandas`, `pillow`, `numpy`)
 - `DEMO_README.md`           — how to install, run, and deploy the demo
@@ -197,7 +197,7 @@ to `models/`. If a deploy breaks, the most common causes are:
 - `demo_images/`             — hero/curated images shown in the Streamlit demo
 - `default.png`              — fallback image when nothing else is loaded
 - `rtdetr-l.pt`              — RT-DETR-L pretrained weights (root, 66 MB, committed)
-- `jenny/yolo26s.pt`         — YOLO26s pretrained weights (20 MB, committed)
+- `jenny/yolo26m.pt`         — YOLO26m pretrained weights (20 MB, committed)
 - `runs/defect_detection/`   — RT-DETR training & eval artifacts (committed; v4 best.pt gitignored)
 - `jenny/runs/detect/road_damage/` — YOLO training & eval artifacts
 - `run_train3.sbatch`        — SLURM batch script for `Train3.ipynb` (v7, current)
@@ -217,7 +217,7 @@ to `models/`. If a deploy breaks, the most common causes are:
 - Use `rtdetr_l_v{N}` (or `rtdetr_l_v{N}_{tag}`) as the run name; v2, v3_frozen, v4,
   v5 (deleted), v6, v7 already exist.
 - For YOLO ablations, use `frozen_backbone` / `partial_freeze_neck` / `unfrozen` as
-  the variant name. `unfrozen` is the chosen one for the demo.
+  the variant name. `frozen_backbone` is the chosen one for the demo.
 - Don't bump Python past 3.12 carelessly — notebook outputs were produced on 3.9.
 - When changing `app.py` model candidates, **first = best** so `_resolve_path` picks it.
 - Detailed HPC run workflows (interactive vs sbatch, tunnel setup, chain management)
