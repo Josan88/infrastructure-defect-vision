@@ -7,7 +7,7 @@ Detection). Two-model pipeline trained on a YOLO-format dataset of 3 classes —
 
 1. **RT-DETR-L** (`runs/defect_detection/rtdetr_l_v7_iter3/` — peak mAP50 ≈ 0.61) — driven
    by the 6-iteration active-learning loop in `Train3.ipynb`.
-2. **YOLOv8s** ablation (`jenny/runs/detect/road_damage/unfrozen/`) — three runs
+2. **YOLO26s** ablation (`jenny/runs/detect/road_damage/unfrozen/`) — three runs
    (`frozen_backbone`, `partial_freeze_neck`, `unfrozen`) for side-by-side demo
    comparison.
 
@@ -186,7 +186,7 @@ to `models/`. If a deploy breaks, the most common causes are:
 
 ## Layout
 - `Train*.ipynb`             — RT-DETR training notebooks (use `Train3.ipynb`)
-- `jenny/aipro.ipynb`        — YOLOv8s training notebook
+- `jenny/aipro.ipynb`        — YOLO26s training notebook
 - `app.py`                   — Streamlit demo (RT-DETR vs YOLO side-by-side)
 - `requirements.txt`         — **demo only** deps (`streamlit`, `ultralytics`, `pandas`, `pillow`, `numpy`)
 - `DEMO_README.md`           — how to install, run, and deploy the demo
@@ -197,7 +197,7 @@ to `models/`. If a deploy breaks, the most common causes are:
 - `demo_images/`             — hero/curated images shown in the Streamlit demo
 - `default.png`              — fallback image when nothing else is loaded
 - `rtdetr-l.pt`              — RT-DETR-L pretrained weights (root, 66 MB, committed)
-- `jenny/yolo26s.pt`         — YOLOv8s pretrained weights (20 MB, committed)
+- `jenny/yolo26s.pt`         — YOLO26s pretrained weights (20 MB, committed)
 - `runs/defect_detection/`   — RT-DETR training & eval artifacts (committed; v4 best.pt gitignored)
 - `jenny/runs/detect/road_damage/` — YOLO training & eval artifacts
 - `run_train3.sbatch`        — SLURM batch script for `Train3.ipynb` (v7, current)
