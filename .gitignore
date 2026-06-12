@@ -2,7 +2,7 @@
 .venv
 scripts
 docs
-jenny/aipro.ipynb
+# jenny/aipro.ipynb
 logs
 __pycache__
 runs/defect_detection/rtdetr_l_v4/weights/best.pt
