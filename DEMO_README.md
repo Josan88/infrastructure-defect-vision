@@ -63,7 +63,7 @@ This opens a browser at `http://localhost:8501` with the demo interface.
 - **Confidence Threshold** (sidebar): Minimum confidence to show a detection (default: 0.25). Lower values increase recall but may produce more false positives.
 
 ### Step 3: View Results
-- **Side-by-side comparison**: RT-DETR-L (left) vs YOLO26s (right)
+- **Side-by-side comparison**: RT-DETR-L (left) vs YOLO26m (right)
 - **Detection boxes**: Coloured rectangles with defect labels and confidence scores
 - **Analytics panel**: Defect counts, average confidence, confidence bands
 - **Confidence bands**: High (≥ 0.70) / Medium (≥ 0.40) / Low (< 0.40) — note this is model confidence, not defect severity
@@ -88,9 +88,9 @@ This opens a browser at `http://localhost:8501` with the demo interface.
 | Model | Type | mAP50 | mAP50-95 | Precision | Recall | Parameters |
 |-------|------|-------|----------|-----------|--------|------------|
 | RT-DETR-L | Transformer (encoder-decoder) | 0.613 | 0.315 | 0.696 | 0.661 | 32M |
-| YOLO26s | CNN (single-stage) | 0.816 | 0.703 | 0.797 | 0.439 | 11M |
+| YOLO26m | CNN (single-stage) | 0.763 | — | — | — | ~20M |
 
-*RT-DETR-L metrics are from the peak iteration (iter 3) of a 6-iter active-learning loop. YOLO26s metrics are from the unfrozen-backbone run (300 epochs).*
+*RT-DETR-L metrics are from the peak iteration (iter 3) of a 6-iter active-learning loop. YOLO26m metrics are from the frozen-backbone run (300 epochs).*
 
 ---
 
@@ -117,9 +117,9 @@ COS40007-Group/
 ├── dataset/test/images/            ← Sample images for testing
 ├── runs/defect_detection/
 │   └── rtdetr_l_v7_iter3/weights/best.pt  ← RT-DETR-L model (peak iter)
-├── jenny/yolo26s.pt                ← YOLO26s pretrained weights
+├── jenny/yolo26m.pt                ← YOLO26m pretrained weights
 └── jenny/runs/detect/road_damage/
-    └── unfrozen/weights/best.pt    ← YOLO26s model (best ablation)
+    └── unfrozen/weights/best.pt    ← YOLO26m model (best ablation)
 ```
 
 ---
