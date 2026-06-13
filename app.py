@@ -31,7 +31,7 @@ RTDETR_CANDIDATES = [
     os.path.join("runs", "defect_detection", "rtdetr_l_v7_iter3", "weights", "best.pt"),
 ]
 YOLO_CANDIDATES = [
-    os.path.join("jenny", "runs", "detect", "road_damage", "frozen_backbone", "weights", "best.pt"),
+    os.path.join("jenny", "runs", "detect", "road_damage", "unfrozen", "weights", "best.pt"),
 ]
 
 DEMO_IMAGES_DIR = os.path.join(BASE_DIR, "dataset", "test", "images")
