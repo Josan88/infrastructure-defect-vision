@@ -7,3 +7,4 @@ logs
 __pycache__
 runs/defect_detection/rtdetr_l_v4/weights/best.pt
 jenny/aipro-Copy1.ipynb
+jenny/aipro-Copy2.ipynb

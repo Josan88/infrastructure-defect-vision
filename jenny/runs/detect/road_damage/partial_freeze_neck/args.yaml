@@ -1,8 +1,8 @@
 task: detect
 mode: train
-model: yolo26s.pt
+model: yolo26m.pt
 data: dataset.yaml
-epochs: 300
+epochs: 500
 time: null
 patience: 50
 batch: 16
@@ -18,7 +18,7 @@ exist_ok: true
 pretrained: true
 optimizer: AdamW
 verbose: true
-seed: 0
+seed: 42
 deterministic: true
 single_cls: false
 rect: false
